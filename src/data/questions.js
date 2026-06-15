@@ -178,8 +178,25 @@ export const questions = [
                 { text: "Why do cats stare at empty corners?", mainAnimal: "bat", subAnimal: "owl" }
             ]
         }
+    },
+    {
+        question: {
+            nl: "Je krijgt onverwacht een hele dag cadeau. Waar eindig je waarschijnlijk?",
+            en: "You unexpectedly get an entire day to yourself. Where do you most likely end up?"
+        },
+        answers: {
+            nl: [
+                { text: "Ergens met boeken, ideeën en iets dat ik eindelijk wil uitzoeken.", mainAnimal: "owl", subAnimal: "octopus" },
+                { text: "Onderweg naar een plek waar ik nog nooit ben geweest.", mainAnimal: "horse", subAnimal: "eagle" },
+                { text: "Aan een lange tafel met mensen die ik graag zie.", mainAnimal: "dog", subAnimal: "dolphin" },
+                { text: "In de zon, zonder plan en opvallend tevreden.", mainAnimal: "capybara", subAnimal: "otter" }
+            ],
+            en: [
+                { text: "Somewhere with books, ideas, and a question I finally have time to explore.", mainAnimal: "owl", subAnimal: "octopus" },
+                { text: "On my way to somewhere I have never been before.", mainAnimal: "horse", subAnimal: "eagle" },
+                { text: "At a long table with people I care about.", mainAnimal: "dog", subAnimal: "dolphin" },
+                { text: "In the sun, with no plan and surprisingly content.", mainAnimal: "capybara", subAnimal: "otter" }
+            ]
+        }
     }
 ]
-
-console.log(questions)
-console.log("Aantal vragen:", questions.length) // Zou 9 moeten tonen

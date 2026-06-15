@@ -1,22 +1,29 @@
-import { useParams, Link, useNavigate } from "react-router-dom"
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { questions } from "../data/questions"
-import { useState } from "react"
+import { getAnimalResults, signatureAnimals } from "../data/scoring"
 
 
 function Quiz() {
   const { lang } = useParams()
   const language = lang === "en" ? "en" : "nl"
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [mainScores, setMainScores] = useState({})
-  const [subScores, setSubScores] = useState({})
+  const [answers, setAnswers] = useState([])
   const [isCalculating, setIsCalculating] = useState(false)
   const [randomMessage, setRandomMessage] = useState("")
+  const [shareStatus, setShareStatus] = useState("")
+
+  useEffect(() => {
+    document.documentElement.lang = language
+    document.title = language === "en" ? "Which animal are you?" : "Welk dier ben jij?"
+  }, [language])
 
   // Taal toggle functie
   const switchLanguage = () => {
     const newLang = language === "nl" ? "en" : "nl"
-    navigate(`/${newLang}`)
+    navigate(`/${newLang}${window.location.search}`)
   }
 
   const messages = {
@@ -119,8 +126,20 @@ function Quiz() {
         en: "There's a part of you that likes to understand how something works before diving in."},
       fact: {
         nl: "Bij sommige uilensoorten zitten de oren niet op dezelfde hoogte. Daardoor kunnen ze in het donker hun prooi met verbazingwekkende precisie lokaliseren.",
-        en: "ome owl species have unevenly placed ears, helping them locate prey with astonishing accuracy in the dark."
+        en: "Some owl species have unevenly placed ears, helping them locate prey with astonishing accuracy in the dark."
     }},
+    eagle: {
+      emoji: "🦅",
+      name: {
+        nl: "Adelaar",
+        en: "Eagle"},
+      description: {
+        nl: "Jij houdt graag overzicht. Je ziet snel waar je naartoe wilt en laat je onderweg niet gemakkelijk afleiden.",
+        en: "You like to keep the bigger picture in view. You quickly see where you want to go and are not easily distracted along the way."},
+      fact: {
+        nl: "Adelaars kunnen kleine prooien vanaf meerdere kilometers afstand waarnemen.",
+        en: "Eagles can spot small prey from several kilometres away."},
+    },
     shark: {
       emoji: "🦈",
       name: {
@@ -300,7 +319,7 @@ function Quiz() {
         en: "Goat"},
       description: {
         nl: "Als iemand zegt dat iets niet kan, word je ineens nieuwsgierig.",
-        en: "hen someone says something can't be done, you suddenly become curious."},
+        en: "When someone says something can't be done, you suddenly become curious."},
       fact: {
         nl: "Sommige geiten lopen over bijna verticale rotswanden alsof het een gewoon wandelpad is.",
         en: "Some goats walk across near-vertical cliffs as if they were ordinary footpaths"},
@@ -490,136 +509,263 @@ function Quiz() {
     }
   }
 
-  const getRandomMessage = () => {
-    const randomIndex = Math.floor(Math.random() * messages[language].length)
-    return messages[language][randomIndex]
-  }
+  const copy = {
+    nl: {
+      eyebrow: "Ontdek je innerlijke dier",
+      question: "Vraag",
+      of: "van",
+      back: "Terug",
+      mainMatch: "hoofdmoot",
+      subMatch: "vleugje",
+      match: "match",
+      funFact: "Leuk weetje",
+      resultIntro: "Jouw dierencombinatie",
+      withHint: "met een vleugje",
+      playAgain: "Opnieuw spelen",
+      menu: "Hoofdmenu",
+      share: "Deel mijn resultaat",
+      shared: "Link gekopieerd!",
+      shareText: "Ik ben een {main}, met een vleugje {sub}. Welk dier ben jij?",
+      friendIntro: "Een vriend deelde deze combinatie met je",
+      friendResult: "Je vriend is {main}, met een vleugje {sub}.",
+      compareTitle: "Jullie dieren naast elkaar",
+      sameMain: "Jullie delen hetzelfde hoofddier.",
+      sameSub: "Jullie hebben hetzelfde tweede dier.",
+      different: "Jullie zijn een mooie mix van verschillende dieren.",
+    },
+    en: {
+      eyebrow: "Discover your inner animal",
+      question: "Question",
+      of: "of",
+      back: "Back",
+      mainMatch: "main",
+      subMatch: "hint",
+      match: "match",
+      funFact: "Fun fact",
+      resultIntro: "Your animal combination",
+      withHint: "with a hint of",
+      playAgain: "Play again",
+      menu: "Main menu",
+      share: "Share my result",
+      shared: "Link copied!",
+      shareText: "I am a {main}, with a hint of {sub}. Which animal are you?",
+      friendIntro: "A friend shared this combination with you",
+      friendResult: "Your friend is a {main}, with a hint of {sub}.",
+      compareTitle: "Your animals side by side",
+      sameMain: "You share the same main animal.",
+      sameSub: "You have the same second animal.",
+      different: "You make a lovely mix of different animals.",
+    },
+  }[language]
 
-  const topMainAnimal = Object.keys(mainScores).length > 0
-    ? Object.entries(mainScores).sort((a, b) => b[1] - a[1])[0][0]
-    : null
+  const result = useMemo(
+    () => (answers.length === questions.length ? getAnimalResults(answers) : null),
+    [answers],
+  )
+  const friendMain = searchParams.get("friend")
+  const friendSub = searchParams.get("friendSub")
+  const hasFriendResult = Boolean(animalInfo[friendMain] && animalInfo[friendSub])
+  const friendMainInfo = animalInfo[friendMain]
+  const friendSubInfo = animalInfo[friendSub]
 
-  const topSubAnimal = Object.keys(subScores).length > 0
-    ? Object.entries(subScores).sort((a, b) => b[1] - a[1])[0][0]
-    : null
-
-  const handleAnswer = (answer) => {
-    setMainScores(prev => ({
-      ...prev,
-      [answer.mainAnimal]: (prev[answer.mainAnimal] || 0) + 1
-    }))
-    setSubScores(prev => ({
-      ...prev,
-      [answer.subAnimal]: (prev[answer.subAnimal] || 0) + 1
-    }))
+  const handleAnswer = (answer, answerIndex) => {
+    const scoredAnswer = {
+      ...answer,
+      answerIndex,
+      resultAnimal: signatureAnimals[currentQuestion][answerIndex],
+    }
+    const nextAnswers = [...answers.slice(0, currentQuestion), scoredAnswer]
+    setAnswers(nextAnswers)
 
     if (currentQuestion === questions.length - 1) {
-      setRandomMessage(getRandomMessage())
+      const messageIndex = nextAnswers.reduce(
+        (total, item) => total + item.resultAnimal.charCodeAt(0),
+        0,
+      ) % messages[language].length
+      setRandomMessage(messages[language][messageIndex])
       setIsCalculating(true)
 
       setTimeout(() => {
-        setCurrentQuestion(currentQuestion + 1)
+        setCurrentQuestion(questions.length)
         setIsCalculating(false)
-      }, 1000)
+      }, 900)
       return
     }
 
-    setCurrentQuestion(currentQuestion + 1)
+    setCurrentQuestion((question) => question + 1)
   }
 
-  // Show calculating screen
+  const handleBack = () => {
+    setCurrentQuestion((question) => Math.max(0, question - 1))
+  }
+
+  const restartQuiz = () => {
+    setAnswers([])
+    setCurrentQuestion(0)
+    setShareStatus("")
+  }
+
+  const handleShare = async () => {
+    const shareUrl = new URL(window.location.href)
+    shareUrl.search = ""
+    shareUrl.searchParams.set("friend", result.mainAnimal)
+    shareUrl.searchParams.set("friendSub", result.subAnimal)
+
+    const shareText = copy.shareText
+      .replace("{main}", animalInfo[result.mainAnimal].name[language])
+      .replace("{sub}", animalInfo[result.subAnimal].name[language])
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: document.title,
+          text: shareText,
+          url: shareUrl.toString(),
+        })
+        return
+      }
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`)
+      setShareStatus(copy.shared)
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        await navigator.clipboard.writeText(shareUrl.toString())
+        setShareStatus(copy.shared)
+      }
+    }
+  }
+
   if (isCalculating) {
     return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>
+      <main className="quiz-shell loading-screen" aria-live="polite">
+        <div className="loading-paw">🐾</div>
         <h1 className="loadingMessage">{randomMessage}</h1>
-      </div>
+      </main>
     )
   }
 
-  // Show result screen
-  if (currentQuestion === questions.length) {
+  if (currentQuestion === questions.length && result) {
+    const mainInfo = animalInfo[result.mainAnimal]
+    const subInfo = animalInfo[result.subAnimal]
+    const comparison = friendMain === result.mainAnimal
+      ? copy.sameMain
+      : friendSub === result.subAnimal
+        ? copy.sameSub
+        : copy.different
+
     return (
-      <>
-        {/* Taalknop */}
-        <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-          <button 
-            onClick={switchLanguage}
-            style={{
-              background: "none",
-              border: "1px solid #ccc",
-              borderRadius: "20px",
-              padding: "0.3rem 0.8rem",
-              cursor: "pointer",
-              fontSize: "0.9rem"
-            }}
-          >
+      <main className="quiz-shell result-page">
+        <div className="topbar">
+          <span className="brand-mark">Animal quiz</span>
+          <button className="language-button" onClick={switchLanguage}>
             {language === "nl" ? "🇬🇧 English" : "🇳🇱 Nederlands"}
           </button>
         </div>
 
-        <h2 className="result-main-animal">
-          {animalInfo[topMainAnimal]?.emoji || "🐾"} {animalInfo[topMainAnimal]?.name[language] || (language === "en" ? "Animal" : "Dier")}
-        </h2>
-        <p className="result-description">
-          {animalInfo[topMainAnimal]?.description[language] || (language === "en" ? "No description available" : "Geen beschrijving beschikbaar")}
-        </p>
-        <p className="result-fact">
-          {language === "en" ? "🐾 Fun fact:" : "🐾 Leuk weetje:"}{" "}
-          {animalInfo[topMainAnimal]?.fact[language] || (language === "en" ? "No fact available" : "Geen weetje beschikbaar")}
-        </p >
-        <p className="result-sub-animal">
-          {language === "en" ? "With a hint of" : "Met een vleugje"} {animalInfo[topSubAnimal]?.emoji || ""} {animalInfo[topSubAnimal]?.name[language] || (language === "en" ? " animal" : "dier")}</p>
-        
-        <p className="result-sub-description">{animalInfo[topSubAnimal]?.description[language] || (language === "en" ? "No description available" : "Geen beschrijving beschikbaar")}</p>
+        <section className="result-card">
+          <p className="eyebrow">{copy.resultIntro}</p>
+          <div className="result-animals" aria-label={`${mainInfo.name[language]} ${copy.withHint} ${subInfo.name[language]}`}>
+            <div className="animal-result animal-result-main">
+              <span className="animal-emoji">{mainInfo.emoji}</span>
+              <span className="match-percentage">{result.mainPercentage}% {copy.match}</span>
+              <h1>{mainInfo.name[language]}</h1>
+              <span className="result-label">{copy.mainMatch}</span>
+            </div>
+            <span className="result-plus">+</span>
+            <div className="animal-result">
+              <span className="animal-emoji">{subInfo.emoji}</span>
+              <span className="match-percentage">{result.subPercentage}% {copy.match}</span>
+              <h2>{subInfo.name[language]}</h2>
+              <span className="result-label">{copy.subMatch}</span>
+            </div>
+          </div>
 
-        <p className="result-fact">
-          {language === "en" ? "🐾 Fun fact:" : "🐾 Leuk weetje:"}{" "}
-          {animalInfo[topSubAnimal]?.fact[language] || (language === "en" ? "No fact available" : "Geen weetje beschikbaar")}
-        </p>
+          <div className="result-copy">
+            <p>{mainInfo.description[language]}</p>
+            <p className="result-fact"><strong>🐾 {copy.funFact}:</strong> {mainInfo.fact[language]}</p>
+            <p>{subInfo.description[language]}</p>
+            <p className="result-fact"><strong>🐾 {copy.funFact}:</strong> {subInfo.fact[language]}</p>
+          </div>
+        </section>
 
-        <a href="https://animals.timhupkes.com">
-          <button className="answer-button">
-            {language === "en" ? "Main menu" : "Hoofdmenu"}
-          </button>
-        </a>
-      </>
+        {hasFriendResult && (
+          <section className="comparison-card">
+            <p className="eyebrow">{copy.compareTitle}</p>
+            <div className="comparison-animals">
+              <span>{mainInfo.emoji} {mainInfo.name[language]}</span>
+              <span>↔</span>
+              <span>{friendMainInfo.emoji} {friendMainInfo.name[language]}</span>
+            </div>
+            <p>{comparison}</p>
+            <p className="friend-detail">
+              {copy.friendResult
+                .replace("{main}", friendMainInfo.name[language])
+                .replace("{sub}", friendSubInfo.name[language])}
+            </p>
+          </section>
+        )}
+
+        <div className="result-actions">
+          <button className="primary-button" onClick={handleShare}>{copy.share}</button>
+          <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
+          <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
+        </div>
+        {shareStatus && <p className="share-status" role="status">{shareStatus}</p>}
+      </main>
     )
   }
 
-  // Show quiz question
+  const progress = ((currentQuestion + 1) / questions.length) * 100
+  const selectedAnswer = answers[currentQuestion]
+
   return (
-    <>
-      {/* Taalknop */}
-      <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-        <button 
-          onClick={switchLanguage}
-          style={{
-            background: "none",
-            border: "1px solid #ccc",
-            borderRadius: "20px",
-            padding: "0.3rem 0.8rem",
-            cursor: "pointer",
-            fontSize: "0.9rem"
-          }}
-        >
+    <main className="quiz-shell">
+      <div className="topbar">
+        <span className="brand-mark">Animal quiz</span>
+        <button className="language-button" onClick={switchLanguage}>
           {language === "nl" ? "🇬🇧 English" : "🇳🇱 Nederlands"}
         </button>
       </div>
 
-      <h2 className="question-title">
-        {questions[currentQuestion]?.question[language]}
-      </h2>
+      {hasFriendResult && currentQuestion === 0 && (
+        <div className="friend-invite">
+          <span>{friendMainInfo?.emoji} {friendSubInfo?.emoji}</span>
+          <p>{copy.friendIntro}</p>
+        </div>
+      )}
 
-      {questions[currentQuestion]?.answers[language].map((answer) => (
-        <button 
-          className="answer-button"
-          key={answer.text || answer}
-          onClick={() => handleAnswer(answer)}
-        >
-          {answer.text || answer}
-        </button>
-      ))}
-    </>
+      <section className="question-card">
+        <p className="eyebrow">{copy.eyebrow}</p>
+        <div className="progress-copy">
+          <span>{copy.question} {currentQuestion + 1} {copy.of} {questions.length}</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="progress-track" aria-hidden="true">
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+
+        <h1 className="question-title">{questions[currentQuestion].question[language]}</h1>
+
+        <div className="answers">
+          {questions[currentQuestion].answers[language].map((answer, index) => (
+            <button
+              className={`answer-button ${selectedAnswer?.mainAnimal === answer.mainAnimal && selectedAnswer?.subAnimal === answer.subAnimal ? "is-selected" : ""}`}
+              key={`${answer.mainAnimal}-${answer.subAnimal}-${index}`}
+              onClick={() => handleAnswer(answer, index)}
+            >
+              <span className="answer-letter">{String.fromCharCode(65 + index)}</span>
+              <span>{answer.text}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="question-footer">
+          <button className="back-button" onClick={handleBack} disabled={currentQuestion === 0}>
+            ← {copy.back}
+          </button>
+          <span className="paw-trail" aria-hidden="true">· 🐾 ·</span>
+        </div>
+      </section>
+    </main>
   )
 }
 
