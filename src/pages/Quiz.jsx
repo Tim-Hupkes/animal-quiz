@@ -663,27 +663,43 @@ function Quiz() {
 
         <section className="result-card">
           <p className="eyebrow">{copy.resultIntro}</p>
-          <div className="result-animals" aria-label={`${mainInfo.name[language]} ${copy.withHint} ${subInfo.name[language]}`}>
-            <div className="animal-result animal-result-main">
-              <span className="animal-emoji">{mainInfo.emoji}</span>
-              <span className="match-percentage">{result.mainPercentage}% {copy.match}</span>
-              <h1>{mainInfo.name[language]}</h1>
-              <span className="result-label">{copy.mainMatch}</span>
-            </div>
-            <span className="result-plus">+</span>
-            <div className="animal-result">
-              <span className="animal-emoji">{subInfo.emoji}</span>
-              <span className="match-percentage">{result.subPercentage}% {copy.match}</span>
-              <h2>{subInfo.name[language]}</h2>
-              <span className="result-label">{copy.subMatch}</span>
-            </div>
-          </div>
+          <div
+            className="result-columns"
+            aria-label={`${mainInfo.name[language]} ${copy.withHint} ${subInfo.name[language]}`}
+          >
+            <article className="animal-card animal-card-main">
+              <header className="animal-card-header">
+                <span className="animal-emoji" aria-hidden="true">{mainInfo.emoji}</span>
+                <span className="match-percentage">{result.mainPercentage}% {copy.match}</span>
+                <h1>{mainInfo.name[language]}</h1>
+                <span className="result-label">{copy.mainMatch}</span>
+              </header>
+              <div className="animal-card-divider" aria-hidden="true"><span>✦</span></div>
+              <div className="animal-card-copy">
+                <p className="animal-description">{mainInfo.description[language]}</p>
+                <p className="result-fact">
+                  <strong>🐾 {copy.funFact}:</strong> {mainInfo.fact[language]}
+                </p>
+              </div>
+            </article>
 
-          <div className="result-copy">
-            <p>{mainInfo.description[language]}</p>
-            <p className="result-fact"><strong>🐾 {copy.funFact}:</strong> {mainInfo.fact[language]}</p>
-            <p>{subInfo.description[language]}</p>
-            <p className="result-fact"><strong>🐾 {copy.funFact}:</strong> {subInfo.fact[language]}</p>
+            <span className="result-plus" aria-hidden="true">+</span>
+
+            <article className="animal-card animal-card-sub">
+              <header className="animal-card-header">
+                <span className="animal-emoji" aria-hidden="true">{subInfo.emoji}</span>
+                <span className="match-percentage">{result.subPercentage}% {copy.match}</span>
+                <h2>{subInfo.name[language]}</h2>
+                <span className="result-label">{copy.subMatch}</span>
+              </header>
+              <div className="animal-card-divider" aria-hidden="true"><span>✦</span></div>
+              <div className="animal-card-copy">
+                <p className="animal-description">{subInfo.description[language]}</p>
+                <p className="result-fact">
+                  <strong>🐾 {copy.funFact}:</strong> {subInfo.fact[language]}
+                </p>
+              </div>
+            </article>
           </div>
         </section>
 

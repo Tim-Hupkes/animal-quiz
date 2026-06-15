@@ -205,24 +205,49 @@
 }
 
 .result-card {
-  overflow: hidden;
-  padding: clamp(30px, 6vw, 64px);
+  overflow: visible;
+  padding: clamp(30px, 5vw, 52px);
   text-align: center;
 }
 
-.result-animals {
+.result-columns {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: clamp(12px, 4vw, 36px);
-  align-items: center;
-  max-width: 700px;
-  margin: 0 auto 44px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 28px);
+  align-items: stretch;
+  margin-top: 26px;
 }
 
-.animal-result {
+.animal-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid rgba(76, 104, 86, 0.18);
+  border-radius: 24px;
+  text-align: left;
+}
+
+.animal-card-main {
+  border-color: rgba(184, 146, 85, 0.3);
+  background:
+    radial-gradient(circle at 50% 9%, rgba(234, 211, 166, 0.25), transparent 34%),
+    rgba(255, 252, 245, 0.72);
+  box-shadow: 0 15px 35px rgba(95, 75, 43, 0.07);
+}
+
+.animal-card-sub {
+  background:
+    radial-gradient(circle at 50% 9%, rgba(184, 211, 218, 0.28), transparent 34%),
+    rgba(247, 251, 249, 0.72);
+}
+
+.animal-card-header {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .animal-emoji {
@@ -230,28 +255,22 @@
   filter: drop-shadow(0 12px 12px rgba(38, 65, 48, 0.14));
 }
 
-.animal-result h1,
-.animal-result h2 {
+.animal-card h1,
+.animal-card h2 {
   margin: 10px 0 4px;
   color: var(--forest-dark);
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.7rem, 4vw, 2.8rem);
+  overflow-wrap: anywhere;
 }
 
 .match-percentage {
-  order: 2;
   margin-top: 8px;
   color: var(--forest);
   font-weight: 900;
 }
 
-.animal-result h1,
-.animal-result h2 {
-  order: 3;
-}
-
 .result-label {
-  order: 4;
   color: var(--moss);
   font-size: 0.72rem;
   font-weight: 800;
@@ -260,24 +279,63 @@
 }
 
 .result-plus {
+  position: absolute;
+  z-index: 1;
+  top: 31%;
+  left: 50%;
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(213, 157, 113, 0.35);
+  border-radius: 50%;
+  background: var(--cream);
   color: var(--peach);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 2.4rem;
+  line-height: 1;
+  box-shadow: 0 8px 20px rgba(67, 79, 66, 0.08);
+  transform: translate(-50%, -50%);
 }
 
-.result-copy {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 28px;
-  text-align: left;
+.animal-card-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0;
+  color: rgba(92, 119, 96, 0.38);
 }
 
-.result-copy p {
+.animal-card-divider::before,
+.animal-card-divider::after {
+  height: 1px;
+  flex: 1;
+  background: currentColor;
+  content: "";
+}
+
+.animal-card-divider span {
+  font-size: 0.72rem;
+}
+
+.animal-card-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.animal-card-copy p {
   margin: 0;
   line-height: 1.65;
 }
 
+.animal-description {
+  color: #34483c;
+}
+
 .result-fact {
+  margin-top: auto !important;
   padding: 14px 16px;
   border-radius: 14px;
   background: #f2f1e4;
@@ -377,17 +435,16 @@
     padding: 10px 12px;
   }
 
-  .result-animals {
+  .result-columns {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 42px;
   }
 
   .result-plus {
-    line-height: 1;
-  }
-
-  .result-copy {
-    grid-template-columns: 1fr;
+    top: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 2rem;
   }
 
   .result-actions {
