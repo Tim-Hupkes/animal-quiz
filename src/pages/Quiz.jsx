@@ -784,11 +784,11 @@ function Quiz() {
             )}
           </form>
 
-          <div className="result-actions">
-            <button className="primary-button" onClick={handleShare}>{copy.share}</button>
-            <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
-            <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
-          </div>
+        <div className="result-actions">
+          <button className="secondary-button" onClick={handleShare}>{copy.share}</button>
+          <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
+          <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
+        </div>
         </div>
 
         {hasFriendResult && (
