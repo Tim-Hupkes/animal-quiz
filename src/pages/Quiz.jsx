@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
+import animalQuizLogo from "../assets/animal-quiz-logo.png"
 import { questions } from "../data/questions"
 import { getAnimalResults, signatureAnimals } from "../data/scoring"
+import { isKlaviyoConfigured, subscribeQuizResult } from "../services/klaviyo"
 
 
 function Quiz() {
@@ -14,6 +16,9 @@ function Quiz() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [randomMessage, setRandomMessage] = useState("")
   const [shareStatus, setShareStatus] = useState("")
+  const [subscribeEmail, setSubscribeEmail] = useState("")
+  const [subscribeStatus, setSubscribeStatus] = useState("idle")
+  const [subscribeMessage, setSubscribeMessage] = useState("")
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -532,6 +537,12 @@ function Quiz() {
       sameMain: "Jullie delen hetzelfde hoofddier.",
       sameSub: "Jullie hebben hetzelfde tweede dier.",
       different: "Jullie zijn een mooie mix van verschillende dieren.",
+      subscribeText: "Ontvang jouw uitslag en mijn nieuwste dierenkunst.",
+      subscribeButton: "Stuur mijn uitslag",
+      subscribePlaceholder: "jouw@email.nl",
+      subscribeSuccess: "Dank je! Je inschrijving is ontvangen.",
+      subscribeError: "Dat lukte niet. Controleer je e-mailadres en probeer het opnieuw.",
+      subscribeConfigMissing: "Vul eerst de Klaviyo-configuratie in.",
     },
     en: {
       eyebrow: "Discover your inner animal",
@@ -555,6 +566,12 @@ function Quiz() {
       sameMain: "You share the same main animal.",
       sameSub: "You have the same second animal.",
       different: "You make a lovely mix of different animals.",
+      subscribeText: "Get your result and my latest animal art.",
+      subscribeButton: "Send my result",
+      subscribePlaceholder: "you@email.com",
+      subscribeSuccess: "Thank you! Your signup has been received.",
+      subscribeError: "That did not work. Check your email address and try again.",
+      subscribeConfigMissing: "Add the Klaviyo configuration first.",
     },
   }[language]
 
@@ -603,6 +620,36 @@ function Quiz() {
     setAnswers([])
     setCurrentQuestion(0)
     setShareStatus("")
+    setSubscribeEmail("")
+    setSubscribeStatus("idle")
+    setSubscribeMessage("")
+  }
+
+  const handleSubscribe = async (event) => {
+    event.preventDefault()
+    setSubscribeStatus("loading")
+    setSubscribeMessage("")
+
+    if (!isKlaviyoConfigured(language)) {
+      setSubscribeStatus("error")
+      setSubscribeMessage(copy.subscribeConfigMissing)
+      return
+    }
+
+    try {
+      const resultLabel = `${animalInfo[result.mainAnimal].name[language]} + ${animalInfo[result.subAnimal].name[language]}`
+      await subscribeQuizResult({
+        email: subscribeEmail.trim(),
+        language,
+        resultLabel,
+      })
+      setSubscribeStatus("success")
+      setSubscribeMessage(copy.subscribeSuccess)
+      setSubscribeEmail("")
+    } catch {
+      setSubscribeStatus("error")
+      setSubscribeMessage(copy.subscribeError)
+    }
   }
 
   const handleShare = async () => {
@@ -655,7 +702,7 @@ function Quiz() {
     return (
       <main className="quiz-shell result-page">
         <div className="topbar">
-          <span className="brand-mark">Animal quiz</span>
+          <img className="quiz-logo" src={animalQuizLogo} alt="Tim Hupkes Art dieren quiz" />
           <button className="language-button" onClick={switchLanguage}>
             {language === "nl" ? "🇬🇧 English" : "🇳🇱 Nederlands"}
           </button>
@@ -701,13 +748,48 @@ function Quiz() {
               </div>
             </article>
           </div>
+        </section>
+
+        <div className="result-cta-panel">
+          <form className="result-subscribe" onSubmit={handleSubscribe}>
+            <label className="result-subscribe__label" htmlFor="result-email">
+              {copy.subscribeText}
+            </label>
+            <div className="result-subscribe__row">
+              <input
+                id="result-email"
+                className="result-subscribe__input"
+                type="email"
+                value={subscribeEmail}
+                placeholder={copy.subscribePlaceholder}
+                autoComplete="email"
+                required
+                onChange={(event) => setSubscribeEmail(event.target.value)}
+              />
+              <button
+                className="primary-button result-subscribe__button"
+                type="submit"
+                disabled={subscribeStatus === "loading"}
+              >
+                {subscribeStatus === "loading" ? "..." : copy.subscribeButton}
+              </button>
+            </div>
+            {subscribeMessage && (
+              <p
+                className={`result-subscribe__message result-subscribe__message--${subscribeStatus}`}
+                role="status"
+              >
+                {subscribeMessage}
+              </p>
+            )}
+          </form>
 
           <div className="result-actions">
             <button className="primary-button" onClick={handleShare}>{copy.share}</button>
             <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
             <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
           </div>
-        </section>
+        </div>
 
         {hasFriendResult && (
           <section className="comparison-card">
@@ -737,7 +819,7 @@ function Quiz() {
   return (
     <main className="quiz-shell">
       <div className="topbar">
-        <span className="brand-mark">Animal quiz</span>
+        <img className="quiz-logo" src={animalQuizLogo} alt="Tim Hupkes Art dieren quiz" />
         <button className="language-button" onClick={switchLanguage}>
           {language === "nl" ? "🇬🇧 English" : "🇳🇱 Nederlands"}
         </button>
