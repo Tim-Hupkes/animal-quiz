@@ -202,11 +202,12 @@
 
 .result-page {
   width: min(980px, calc(100% - 32px));
+  padding: 20px 0 32px;
 }
 
 .result-card {
   overflow: visible;
-  padding: clamp(30px, 5vw, 52px);
+  padding: clamp(22px, 3.5vw, 34px);
   text-align: center;
 }
 
@@ -216,14 +217,14 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(16px, 3vw, 28px);
   align-items: stretch;
-  margin-top: 26px;
+  margin-top: 14px;
 }
 
 .animal-card {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(24px, 4vw, 38px);
+  padding: clamp(18px, 2.5vw, 26px);
   border: 1px solid rgba(76, 104, 86, 0.18);
   border-radius: 24px;
   text-align: left;
@@ -251,7 +252,7 @@
 }
 
 .animal-emoji {
-  font-size: clamp(4rem, 12vw, 7rem);
+  font-size: clamp(3rem, 7vw, 5rem);
   filter: drop-shadow(0 12px 12px rgba(38, 65, 48, 0.14));
 }
 
@@ -260,7 +261,7 @@
   margin: 10px 0 4px;
   color: var(--forest-dark);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
   overflow-wrap: anywhere;
 }
 
@@ -302,7 +303,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 28px 0;
+  margin: 16px 0;
   color: rgba(92, 119, 96, 0.38);
 }
 
@@ -322,12 +323,12 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 22px;
+  gap: 14px;
 }
 
 .animal-card-copy p {
   margin: 0;
-  line-height: 1.65;
+  line-height: 1.5;
 }
 
 .animal-description {
@@ -336,7 +337,7 @@
 
 .result-fact {
   margin-top: auto !important;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-radius: 14px;
   background: #f2f1e4;
   color: #58675e;
@@ -370,7 +371,7 @@
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: 18px;
 }
 
 .primary-button,

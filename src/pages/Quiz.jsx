@@ -701,6 +701,12 @@ function Quiz() {
               </div>
             </article>
           </div>
+
+          <div className="result-actions">
+            <button className="primary-button" onClick={handleShare}>{copy.share}</button>
+            <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
+            <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
+          </div>
         </section>
 
         {hasFriendResult && (
@@ -720,11 +726,6 @@ function Quiz() {
           </section>
         )}
 
-        <div className="result-actions">
-          <button className="primary-button" onClick={handleShare}>{copy.share}</button>
-          <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
-          <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
-        </div>
         {shareStatus && <p className="share-status" role="status">{shareStatus}</p>}
       </main>
     )
