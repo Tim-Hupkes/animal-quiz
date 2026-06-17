@@ -55,6 +55,52 @@
   padding: clamp(28px, 6vw, 64px);
 }
 
+.question-page {
+  width: min(900px, calc(100% - 32px));
+  padding: 14px 0 32px;
+}
+
+.question-page .topbar {
+  min-height: 86px;
+  margin-bottom: 10px;
+}
+
+.question-page .quiz-logo {
+  width: 150px;
+  max-width: 38vw;
+}
+
+.question-page .language-button {
+  padding: 7px 12px;
+  font-size: 0.82rem;
+}
+
+.question-page .question-card {
+  padding: clamp(24px, 4vw, 38px);
+}
+
+.question-page .eyebrow {
+  margin-bottom: 12px;
+}
+
+.question-page .question-title {
+  margin: clamp(22px, 4vw, 34px) auto 24px;
+  font-size: clamp(1.55rem, 3.8vw, 2.2rem);
+}
+
+.question-page .answers {
+  gap: 10px;
+}
+
+.question-page .answer-button {
+  min-height: 56px;
+  padding: 10px 16px;
+}
+
+.question-page .question-footer {
+  margin-top: 18px;
+}
+
 .eyebrow {
   margin: 0 0 18px;
   color: var(--moss);

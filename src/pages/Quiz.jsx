@@ -817,7 +817,7 @@ function Quiz() {
   const selectedAnswer = answers[currentQuestion]
 
   return (
-    <main className="quiz-shell">
+    <main className="quiz-shell question-page">
       <div className="topbar">
         <img className="quiz-logo" src={animalQuizLogo} alt="Tim Hupkes Art dieren quiz" />
         <button className="language-button" onClick={switchLanguage}>
