@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import animalQuizLogo from "../assets/animal-quiz-logo.png"
+import { KLAVIYO_CONFIG } from "../config/klaviyo"
+import { getArtworkRecommendations } from "../data/artwork"
 import { questions } from "../data/questions"
 import { getAnimalResults, signatureAnimals } from "../data/scoring"
-import { isKlaviyoConfigured, subscribeQuizResult } from "../services/klaviyo"
+import { isKlaviyoConfigured, submitQuizResultToKlaviyo } from "../services/klaviyo"
 
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 function Quiz() {
   const { lang } = useParams()
@@ -540,9 +543,16 @@ function Quiz() {
       subscribeText: "Ontvang jouw uitslag en mijn nieuwste dierenkunst.",
       subscribeButton: "Stuur mijn uitslag",
       subscribePlaceholder: "jouw@email.nl",
-      subscribeSuccess: "Dank je! Je inschrijving is ontvangen.",
+      subscribeConsent: "Je ontvangt je persoonlijke quizuitslag en schrijft je in voor inspiratie, toekomstige quizzen en updates over dierenkunst. Je kunt je altijd uitschrijven.",
+      subscribeSuccess: "Dank je! Je uitslag is onderweg naar je inbox.",
       subscribeError: "Dat lukte niet. Controleer je e-mailadres en probeer het opnieuw.",
+      subscribeInvalidEmail: "Vul een geldig e-mailadres in.",
       subscribeConfigMissing: "Vul eerst de Klaviyo-configuratie in.",
+      socialShare: "Deel of vergelijk",
+      shareFacebook: "Facebook",
+      shareLinkedIn: "LinkedIn",
+      shareX: "X",
+      copyLink: "Kopieer link",
     },
     en: {
       eyebrow: "Discover your inner animal",
@@ -569,9 +579,16 @@ function Quiz() {
       subscribeText: "Get your result and my latest animal art.",
       subscribeButton: "Send my result",
       subscribePlaceholder: "you@email.com",
-      subscribeSuccess: "Thank you! Your signup has been received.",
+      subscribeConsent: "You will receive your personal quiz result and sign up for inspiration, future quizzes, and animal art updates. You can unsubscribe at any time.",
+      subscribeSuccess: "Thank you! Your result is on its way to your inbox.",
       subscribeError: "That did not work. Check your email address and try again.",
+      subscribeInvalidEmail: "Enter a valid email address.",
       subscribeConfigMissing: "Add the Klaviyo configuration first.",
+      socialShare: "Share or compare",
+      shareFacebook: "Facebook",
+      shareLinkedIn: "LinkedIn",
+      shareX: "X",
+      copyLink: "Copy link",
     },
   }[language]
 
@@ -625,10 +642,76 @@ function Quiz() {
     setSubscribeMessage("")
   }
 
+  const getShareUrl = () => {
+    const shareUrl = new URL(window.location.href)
+    shareUrl.search = ""
+    shareUrl.searchParams.set("friend", result.mainAnimal)
+    shareUrl.searchParams.set("friendSub", result.subAnimal)
+    return shareUrl.toString()
+  }
+
+  const getShareText = () => copy.shareText
+    .replace("{main}", animalInfo[result.mainAnimal].name[language])
+    .replace("{sub}", animalInfo[result.subAnimal].name[language])
+
+  const getResultEventProperties = (email) => {
+    const mainInfo = animalInfo[result.mainAnimal]
+    const subInfo = animalInfo[result.subAnimal]
+    const resultLabel = `${mainInfo.name[language]} + ${subInfo.name[language]}`
+    const artworkRecommendations = getArtworkRecommendations({
+      mainAnimal: result.mainAnimal,
+      secondaryAnimal: result.subAnimal,
+      language,
+    })
+
+    return {
+      email,
+      language,
+      main_animal: mainInfo.name[language],
+      main_animal_slug: result.mainAnimal,
+      main_animal_percentage: result.mainPercentage,
+      main_animal_description: mainInfo.description[language],
+      main_animal_fact: mainInfo.fact[language],
+      secondary_animal: subInfo.name[language],
+      secondary_animal_slug: result.subAnimal,
+      secondary_animal_percentage: result.subPercentage,
+      secondary_animal_description: subInfo.description[language],
+      secondary_animal_fact: subInfo.fact[language],
+      quiz_completed_at: new Date().toISOString(),
+      quiz_version: KLAVIYO_CONFIG.quizVersion,
+      result_label: resultLabel,
+      result_share_text: getShareText(),
+      quiz_url: `${KLAVIYO_CONFIG.siteUrl}/quiz/${language}`,
+      share_url: getShareUrl(),
+      source: "animal_quiz_result_page",
+      list_id: KLAVIYO_CONFIG.listIds[language],
+      artwork_1_title: artworkRecommendations[0]?.title || "",
+      artwork_1_description: artworkRecommendations[0]?.description || "",
+      artwork_1_url: artworkRecommendations[0]?.url || "",
+      artwork_1_image_url: artworkRecommendations[0]?.image_url || "",
+      artwork_2_title: artworkRecommendations[1]?.title || "",
+      artwork_2_description: artworkRecommendations[1]?.description || "",
+      artwork_2_url: artworkRecommendations[1]?.url || "",
+      artwork_2_image_url: artworkRecommendations[1]?.image_url || "",
+      artwork_3_title: artworkRecommendations[2]?.title || "",
+      artwork_3_description: artworkRecommendations[2]?.description || "",
+      artwork_3_url: artworkRecommendations[2]?.url || "",
+      artwork_3_image_url: artworkRecommendations[2]?.image_url || "",
+    }
+  }
+
   const handleSubscribe = async (event) => {
     event.preventDefault()
     setSubscribeStatus("loading")
     setSubscribeMessage("")
+
+    const email = subscribeEmail.trim().toLowerCase()
+
+    if (!isValidEmail(email)) {
+      setSubscribeStatus("error")
+      setSubscribeMessage(copy.subscribeInvalidEmail)
+      return
+    }
 
     if (!isKlaviyoConfigured(language)) {
       setSubscribeStatus("error")
@@ -637,11 +720,10 @@ function Quiz() {
     }
 
     try {
-      const resultLabel = `${animalInfo[result.mainAnimal].name[language]} + ${animalInfo[result.subAnimal].name[language]}`
-      await subscribeQuizResult({
-        email: subscribeEmail.trim(),
+      await submitQuizResultToKlaviyo({
+        email,
         language,
-        resultLabel,
+        eventProperties: getResultEventProperties(email),
       })
       setSubscribeStatus("success")
       setSubscribeMessage(copy.subscribeSuccess)
@@ -653,21 +735,15 @@ function Quiz() {
   }
 
   const handleShare = async () => {
-    const shareUrl = new URL(window.location.href)
-    shareUrl.search = ""
-    shareUrl.searchParams.set("friend", result.mainAnimal)
-    shareUrl.searchParams.set("friendSub", result.subAnimal)
-
-    const shareText = copy.shareText
-      .replace("{main}", animalInfo[result.mainAnimal].name[language])
-      .replace("{sub}", animalInfo[result.subAnimal].name[language])
+    const shareUrl = getShareUrl()
+    const shareText = getShareText()
 
     try {
       if (navigator.share) {
         await navigator.share({
           title: document.title,
           text: shareText,
-          url: shareUrl.toString(),
+          url: shareUrl,
         })
         return
       }
@@ -693,6 +769,15 @@ function Quiz() {
   if (currentQuestion === questions.length && result) {
     const mainInfo = animalInfo[result.mainAnimal]
     const subInfo = animalInfo[result.subAnimal]
+    const shareUrl = getShareUrl()
+    const shareText = getShareText()
+    const encodedShareUrl = encodeURIComponent(shareUrl)
+    const encodedShareText = encodeURIComponent(shareText)
+    const socialLinks = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedShareUrl}`,
+      x: `https://twitter.com/intent/tweet?text=${encodedShareText}&url=${encodedShareUrl}`,
+    }
     const comparison = friendMain === result.mainAnimal
       ? copy.sameMain
       : friendSub === result.subAnimal
@@ -782,13 +867,21 @@ function Quiz() {
                 {subscribeMessage}
               </p>
             )}
+            <p className="result-subscribe__consent">{copy.subscribeConsent}</p>
           </form>
 
-        <div className="result-actions">
-          <button className="secondary-button" onClick={handleShare}>{copy.share}</button>
-          <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
-          <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
-        </div>
+          <div className="result-actions">
+            <button className="secondary-button" onClick={restartQuiz}>{copy.playAgain}</button>
+            <a className="secondary-button" href="https://animals.timhupkes.com">{copy.menu}</a>
+          </div>
+
+          <div className="social-share" aria-label={copy.socialShare}>
+            <span>{copy.socialShare}</span>
+            <a href={socialLinks.facebook} target="_blank" rel="noreferrer">{copy.shareFacebook}</a>
+            <a href={socialLinks.linkedin} target="_blank" rel="noreferrer">{copy.shareLinkedIn}</a>
+            <a href={socialLinks.x} target="_blank" rel="noreferrer">{copy.shareX}</a>
+            <button type="button" onClick={handleShare}>{copy.copyLink}</button>
+          </div>
         </div>
 
         {hasFriendResult && (
