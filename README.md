@@ -1,16 +1,40 @@
-# React + Vite
+# Animal Personality Quiz
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive bilingual animal personality quiz built with React and TypeScript.
 
-Currently, two official plugins are available:
+**Live Demo**
+https://animals.timhupkes.com/quiz/en
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## About
 
-## React Compiler
+Inspired by my work as an animal artist, I created a personality quiz that matches users with a unique animal personality profile based on their answers.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The application is available in both English and Dutch and combines personality assessment, animal facts and email-based result delivery in a responsive user experience.
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* 10-question personality assessment
+* Dynamic personality matching system
+* 12 main animals and 24 sub-animal profiles
+* Percentage-based animal combinations
+* English and Dutch versions
+* Previous-question navigation
+* Email result delivery
+* Social sharing functionality
+* Copy-link functionality
+* Responsive design for desktop, tablet and mobile
+* Accessible keyboard navigation
+* Personalised animal descriptions
+* Animal fact cards
+
+## Tech Stack
+
+* React
+* TypeScript
+* Vite
+* React Router
+* CSS
+
+## What I Learned
+
+This project gave me practical experience with React component architecture, TypeScript, state management, multilingual content, conditional rendering, user flow design, result calculation logic and responsive frontend development.
